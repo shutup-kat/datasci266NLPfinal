@@ -19,5 +19,5 @@ the semantic similarity task with the labels ["contradiction", "entailment", "ne
 <br><br>
 
 here is a diagram of the arch.
-![pic](projectArch no background.png)
+![project architecture](https://github.com/shutup-kat/datasci266NLPfinal/blob/main/projectArch%20no%20background.png)
 
