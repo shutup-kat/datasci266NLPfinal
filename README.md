@@ -1,2 +1,23 @@
 # datasci266 NLP final
-NLP final
+
+**Scoring AI Policies Through Applied NLP** <br>
+<br>
+In this repo, you will find a lot of CSV files and some pynb files. <br>
+
+datastuff notebook: this is where i did a majority of the data processing, i created the different datasets discussed in the paper. I have the parsing, stripping, and prepping of the text data from the synthetic data and real. There are also some other datasets I tested out from [CUAD](https://github.com/TheAtticusProject/cuad), [legalbench](https://www.google.com/url?q=https%3A%2F%2Fhuggingface.co%2Fdatasets%2Fnguha%2Flegalbench), and [AGORA](https://www.google.com/url?q=https%3A%2F%2Fzenodo.org%2Frecords%2F15053471).
+<br><br>
+
+llama RAG notebook: this is where i have the vector db of the user's policy and the golden standard documents from NIST and some from AGORA. <br>
+I also have the theory of mind reasoning strategy here where after the chuncks are retrieved, the model decides if these document fragments are relevent or not. for each critical area (govern, map, measure, manage) i have 2 prompts to extract relevent document fragments from both the user's submitted documents and the curated golden document set. So, for each critical area, we have the top 2 fragments for each prompt, which is meant to capture only the most important aspects of the policy documents. In theory this means the chuncks not directly evaluated are mostly title/section/apendix items, in practice, this can result in a higher chance of neutrel results as chunck retrieval is based on marginal relevence or similarity search [source](https://python.langchain.com/v0.1/docs/modules/data_connection/retrievers/multi_vector/). Recognizing this showes we have room to develope upon this approach further for cases were the score for a given section is 100% neutral or is over 51% neutral. <br>
+this notebook is where the first hand off takes place, after data retrievel it is readied and packages to hand off to the SSBERT notebook. <br>
+Then, SSBERT will have hand back score results which are then explained here by the llama 3.1 8B instruct model. 
+<br><br>
+
+
+SSBERT notebook: in this notebook, we take in the csv of data from the llama RAG notebook to process and determine a score. the bert-based-uncased model is finetuned for 
+the semantic similarity task with the labels ["contradiction", "entailment", "neutral"](https://nlp.stanford.edu/projects/snli/) for which i have based the scoring method off of. This is a Keras BERT pre-trained model which has some legecy dependences and thus needs the specific versions installed (in top of the nb). I used [this](https://keras.io/examples/nlp/semantic_similarity_with_bert/) implementation. I created a sentence pair dataset from the AGORA dataset which is just a collection of AI governance documents from various sources, i only used the docuemnts from united states local and federal government and some from U.S. corporations. The AGORA dataset includes text from other countries and various document types. I did label the sentence pair agora dataset using the Keras BERT model, so im not sure if that was a good call or not? anyways, the CSV from the llama RAG notebook is put into a pd dataframe which is broken down as such: 2 columns, user text and golden text; then we have the indexes going down in this order, gov1, gov2, map1, map2, mea1, mea2, man1, man2. which corispond to the 4 critical categories and the 2 prompts per category. the top 2 text fragments for each prompt are combined for a longer sample to grade. now, for each category, i count the returned labels for both text fragments, and normalize them to give the ratios. the labels count like such: entialment(+), contradiction(-), and neutral (+/-). Neutral is treated as sort of a "varience" but is not truly a measure of varience. Kind of like i mentioned in the llama notebook explaination above, if i had more time or decide to come back to this project, i want to create an additional workflow that is triggered when a high threshold of neutral is returned which will maybe retrieve the next 2 fragments from the user docs, or maybe retrieve different golden docs. I also want to test out different golden text corpuses and see if i can get different or more informitive results depending on the golden corpus. Maybe, treating the golden corpus as a module of sorts that the user can change if the current one isn't matching their use case or doesn't cover a specific secture of business. I would like like to see if any transfer learning is possible with combining tasks like legal reasoning or understandingg of contracts/legal documents to enhance the performance of the semantic similarity task. 
+<br><br>
+
+here is a diagram of the arch.
+![pic](projectArch no background.png)
+
